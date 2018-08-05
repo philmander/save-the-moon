@@ -5,10 +5,15 @@ export default abstract class BaseSprite {
 
     protected _x: number;
     protected _y: number;
-    protected _dx: number;
-    protected _dy: number;
+    protected _dx: number = 0;
+    protected _dy: number = 0;
 
     protected _strength: number;
+
+    protected play(sfx: any): void {
+        const audio = new Audio(sfx);
+        audio.play();
+    }
 
     public get spriteImage() {
         return this._spriteImage;
@@ -34,8 +39,9 @@ export default abstract class BaseSprite {
         return this._strength;
     }
 
-    public kill(): void {
-        this._strength = 0;
+    public move(): void {
+        this._x += this._dx;
+        this._y += this._dy;
     }
 
     public hit(): void {
@@ -45,5 +51,4 @@ export default abstract class BaseSprite {
     public isAlive(): boolean {
         return this._strength > 0;
     }
-
 }

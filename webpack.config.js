@@ -7,7 +7,19 @@ module.exports = {
   devtool: 'inline-source-map',
   mode: 'development',
   module: {
-    rules: [
+    rules: [{
+      exclude: [
+        /\.tsx?$/
+      ],
+      use: {
+        loader: 'url-loader',
+        options: {
+            limit: 1024,
+            name: '[name].[ext]',
+            outputPath: '',
+        },
+      },
+    },
       {
         test: /\.tsx?$/,
         use: 'ts-loader',

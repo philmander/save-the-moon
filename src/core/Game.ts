@@ -1,6 +1,13 @@
 import Sprite from './Sprite';
-import { GameStage } from './GameSage';
-import ShelterBlock from '../sprites/ShelterBlock';
+import { GameStage } from './GameStage';
+import createShelterBlock from '../sprites/ShelterBlock';
+import createInvader from '../sprites/Invader';
+import createExplosion, { ExplosionSize } from '../sprites/Explosion';
+import createGun from '../sprites/Gun';
+import { moveOrRemove, detectCollision } from './helpers';
+import FiringSprite from './FiringSprite';
+import ControllableSprite, { SpriteControl }  from './ControllableSprite';
+import gameOver from '../sounds/game-over.mp3';
 
 export default class Game {
     private canvas: HTMLCanvasElement;
@@ -12,11 +19,13 @@ export default class Game {
     private background: ImageBitmap;
 
     // sets which hold groups of on-screen sprites
-    private invaderSet: Set<Sprite>;
+    private invaderSet: Set<FiringSprite>;
     private bombSet: Set<Sprite>;
     private missileSet: Set<Sprite>;
     private shelterSet: Set<Sprite>
     private explosionSet: Set<Sprite>
+
+    private gun: FiringSprite & ControllableSprite;
 
     private stage: GameStage;
 
@@ -41,33 +50,141 @@ export default class Game {
         this.shelterSet = new Set();
         this.explosionSet = new Set();
 
-        // draw the shelter blocks
+        this.gun = createGun(100, 420);    
+
+        // setup the shelter blocks
         for(let y = 350; y < 380; y += 10) {
             for(let x = 65; x < 145; x += 10) {
-                this.shelterSet.add(new ShelterBlock(x, y));
+                this.shelterSet.add(createShelterBlock(x, y));
             }
 
             for(let x = 210; x < 290; x += 10) {
-                this.shelterSet.add(new ShelterBlock(x, y));
+                this.shelterSet.add(createShelterBlock(x, y));
             }
 
             for(let x = 355; x < 435; x += 10) {
-                this.shelterSet.add(new ShelterBlock(x, y));
+                this.shelterSet.add(createShelterBlock(x, y));
             }
         }
+
+        document.addEventListener('keydown', ev => {
+            if(this.stage = GameStage.RUNNING) {                
+                switch (ev.key) {
+                    case 'ArrowLeft':
+                        this.gun.control = SpriteControl.MOVE_LEFT;
+                        break;
+                    case 'ArrowRight':
+                        this.gun.control = SpriteControl.MOVE_RIGHT;
+                        break;
+                    case ' ': // Spacebar
+                        this.gun.control = SpriteControl.FIRE;
+                        break;
+                    default:
+                        this.gun.control = SpriteControl.NONE;  
+                }
+            }
+        })
     }
 
     start() {
         this.stage = GameStage.RUNNING;
 
-        this.run();
+        const frameRate = 60;
+        this.run(frameRate * 3);
     }
 
-    run() {        
+    run(invaderInterval: number, invaderIncrement: number = 0) {    
+        // introduce new invaders
+        invaderIncrement++;
+        if(invaderIncrement === invaderInterval) {            
+            this.invaderSet.add(createInvader());
+            invaderIncrement = 0;
+        }
+
+        // invaders
+        for(let invader of this.invaderSet) {             
+            const bomb = invader.fire();        
+            if(bomb) {
+                this.bombSet.add(bomb);
+            }
+        
+            //move        
+            moveOrRemove(invader, this.invaderSet);
+        }
+
+        // bombs
+        for(let bomb of this.bombSet) {
+            if(detectCollision(bomb, this.gun)) {
+                this.gun.hit();
+                bomb.hit();
+                this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.LARGE));                
+            }
+
+            for(let shelterBlock of this.shelterSet) {
+                if(detectCollision(bomb, shelterBlock)) {
+                    bomb.hit();
+                    shelterBlock.hit();
+                    moveOrRemove(shelterBlock, this.shelterSet);                    
+                    this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.SMALL));                
+                    // if there is one collision, there can't be any more
+                    break;
+                }
+            }
+            
+            moveOrRemove(bomb, this.bombSet);
+        }
+
+        // gun
+        if(this.gun.isAlive()) {                   
+            this.gun.move();
+            if(this.gun.isFiring() && this.missileSet.size < 5) {
+                this.missileSet.add(this.gun.fire());
+            }
+            this.gun.control = SpriteControl.NONE;            
+        } else {
+            this.stage = GameStage.FINISHED;
+        }
+
+        // missiles
+        for(let missile of this.missileSet) {        
+            for(let invader of this.invaderSet) {
+                if(detectCollision(missile, invader)) {
+                    missile.hit();
+                    invader.hit();
+
+                    // increment score
+
+                    this.explosionSet.add(createExplosion(invader.x, invader.y, ExplosionSize.LARGE));  
+                    break;
+                }
+            }
+
+            for(let shelterBlock of this.shelterSet) {
+                if(detectCollision(missile, shelterBlock)) {
+                    missile.hit();
+                    shelterBlock.hit();
+                    moveOrRemove(shelterBlock, this.shelterSet);
+                    break;
+                }            
+            }
+
+            moveOrRemove(missile, this.missileSet);
+        }
+
+        for(let explosion of this.explosionSet) {
+            moveOrRemove(explosion, this.explosionSet);
+        }
+
         requestAnimationFrame(() => {
             this.paint();
             if(this.stage === GameStage.RUNNING) {                
-                this.run()
+                this.run(invaderInterval, invaderIncrement);
+            } else if(this.stage === GameStage.FINISHED) {
+                const audio = new Audio(gameOver);
+                audio.volume = 0.75;
+                setTimeout(() => {                    
+                    audio.play();
+                }, 1000);                
             }
         });
     }
@@ -77,11 +194,22 @@ export default class Game {
         ctx.clearRect(0, 0, this.buffer.width, this.buffer.height);
 
         if(this.stage === GameStage.RUNNING) {
-            for(let shelterBlock of this.shelterSet) {
-                shelterBlock.draw(ctx);
+            const allSprites = new Set([
+                ...this.shelterSet,
+                ...this.bombSet,
+                ...this.missileSet,
+                ...this.invaderSet,
+                ...this.explosionSet,
+                this.gun,
+            ])
+            for(let sprite of allSprites) {
+                sprite.draw(ctx);
             }
         }
 
+        this.gun.draw(ctx);
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.buffer, 0, 0);
     }
 }
