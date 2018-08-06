@@ -1,12 +1,21 @@
 import Sprite from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
-import createMissile, { Missile } from './Missile';
+import createMissile from './Missile';
 import FiringSprite from '../core/FiringSprite';
 import ControllableSprite, { SpriteControl } from '../core/ControllableSprite';
+import gunImage from '../images/gun.png';
 
 export default function(x: number, y: number) {
     return new Gun(x, y);
 }
+
+// could loading an image be any more convoluted?
+let bitmap: ImageBitmap = null;
+let image = new Image();
+image.onload = async function loadImage() {
+    bitmap = await createImageBitmap(image, 0, 0, 50, 38);
+}
+image.src = gunImage;
 
 export class Gun extends BaseSprite implements FiringSprite, ControllableSprite {
 
@@ -18,8 +27,8 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
         this._x = x;
         this._y = y;
 
-        this._width = 40;
-        this._height = 20;
+        this._width = 50;
+        this._height = 38;
 
         this._dx = 15;
         this._dy = 0;
@@ -55,7 +64,8 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
     }
 
     public draw(ctx: CanvasRenderingContext2D): void {
-        ctx.fillStyle =  'red';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if(bitmap) {
+            ctx.drawImage(bitmap, this.x, this.y);
+        }        
     }
 }

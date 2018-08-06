@@ -3,21 +3,27 @@ import BaseSprite from '../core/BaseSprite';
 import createBomb, { Bomb } from './Bomb';
 import FiringSprite from '../core/FiringSprite';
 import sound from '../sounds/invader.mp3';
-
+import gunImage from '../images/invader.png';
 
 export default function() {
     return new Invader();
 }
 
-export class Invader extends BaseSprite implements FiringSprite {
+// could loading an image be any more convoluted?
+let bitmap: ImageBitmap = null;
+let image = new Image();
+image.onload = async function loadImage() {
+    bitmap = await createImageBitmap(image, 0, 0, 45, 19);
+}
+image.src = gunImage;
 
-    private points: Array<Array<number>> = [];
+export class Invader extends BaseSprite implements FiringSprite {
 
     constructor() {
         super();
 
-        this._width = 30;
-        this._height = 15;
+        this._width = 45;
+        this._height = 19;
 
         this._dx = 8;
         this._dy = 1;
@@ -60,7 +66,8 @@ export class Invader extends BaseSprite implements FiringSprite {
     }
 
     public draw(ctx: CanvasRenderingContext2D): void {
-        ctx.fillStyle =  'gold';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if(bitmap) {
+            ctx.drawImage(bitmap, this.x, this.y);
+        }      
     }
 }

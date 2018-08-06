@@ -5,7 +5,15 @@ export default function(x: number, y: number) {
     return new Bomb(x, y);
 }
 
+const colors = [
+    'yellow',
+    'lime',
+    'pink',
+];
+
 export class Bomb extends BaseSprite implements Sprite {
+
+    private color: string = colors[Math.floor(Math.random() * (2 - 0 + 1))];
 
     constructor(x: number, y: number) {
         super();
@@ -29,7 +37,7 @@ export class Bomb extends BaseSprite implements Sprite {
     public draw(ctx: CanvasRenderingContext2D): void {
         ctx.beginPath();
         ctx.arc(this.x + (this.width / 2), this.y + (this.height / 2), this.width / 2, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'rgb(255, 255, 0)';
+        ctx.fillStyle = this.color;
         ctx.fill();
     }
 }

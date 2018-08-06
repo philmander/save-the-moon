@@ -12,7 +12,7 @@ module.exports = {
         /\.tsx?$/
       ],
       use: {
-        loader: 'url-loader',
+        loader: 'file-loader',
         options: {
             limit: 1024,
             name: '[name].[ext]',

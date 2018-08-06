@@ -34,7 +34,7 @@ export default class Game {
         this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
 		this.canvas.width = parseInt(this.canvas.style.width);
         this.canvas.height = parseInt(this.canvas.style.height);
-        this.canvas.style.backgroundColor = 'black';
+        //this.canvas.style.backgroundColor = 'black';
         this.ctx = this.canvas.getContext('2d');
 
         // set up a rendering buffer 
@@ -50,7 +50,7 @@ export default class Game {
         this.shelterSet = new Set();
         this.explosionSet = new Set();
 
-        this.gun = createGun(100, 420);    
+        this.gun = createGun(100, 430);    
 
         // setup the shelter blocks
         for(let y = 350; y < 380; y += 10) {
@@ -107,8 +107,7 @@ export default class Game {
             if(bomb) {
                 this.bombSet.add(bomb);
             }
-        
-            //move        
+   
             moveOrRemove(invader, this.invaderSet);
         }
 
@@ -206,8 +205,6 @@ export default class Game {
                 sprite.draw(ctx);
             }
         }
-
-        this.gun.draw(ctx);
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.buffer, 0, 0);
