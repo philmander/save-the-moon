@@ -1,4 +1,4 @@
-import Sprite from '../core/Sprite';
+import { Sprite } from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
 import shot from '../sounds/shot.mp3';
 
@@ -22,7 +22,7 @@ export class Missile extends BaseSprite implements Sprite {
         this._dx = 0;
         this._dy = -15;
 
-        this._strength = 1;
+        this._strength = 1;        
 
         this.points[0] = [ x + 0, y + 6 ];
         this.points[1] = [ x + 0, y + 13 ];

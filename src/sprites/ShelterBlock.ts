@@ -1,4 +1,4 @@
-import Sprite from '../core/Sprite';
+import { Sprite } from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
 
 export default function(x: number, y: number) {
@@ -13,17 +13,15 @@ export class ShelterBlock extends BaseSprite implements Sprite {
         this._x = x;
         this._y = y;
 
-        this._width = 10;
-        this._height = 10;
+        this._width = 8;
+        this._height = 6;
 
         this._strength = 2;
+        this._scoreModifier = -10;
     }
 
-    // public move(): void {}
-    // }
-
     public draw(ctx: CanvasRenderingContext2D): void {
-        ctx.fillStyle =  'rgb(0, 0, 200)';
+        ctx.fillStyle = 'rgb(141, 178, 201)';
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 }

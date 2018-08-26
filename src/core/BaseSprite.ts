@@ -9,6 +9,7 @@ export default abstract class BaseSprite {
     protected _dy: number = 0;
 
     protected _strength: number;
+    protected _scoreModifier = 0;
 
     protected play(sfx: any): void {
         const audio = new Audio(sfx);
@@ -39,9 +40,13 @@ export default abstract class BaseSprite {
         return this._strength;
     }
 
-    public move(): void {
-        this._x += this._dx;
-        this._y += this._dy;
+    public get scoreModifier() {
+        return this._scoreModifier;
+    }
+
+    public move(dx = this._dx, dy = this._dy): void {
+        this._x += dx;
+        this._y += dy;
     }
 
     public hit(): void {

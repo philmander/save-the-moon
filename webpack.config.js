@@ -1,4 +1,6 @@
 const { join} = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const base = process.cwd();
 
@@ -9,7 +11,9 @@ module.exports = {
   module: {
     rules: [{
       exclude: [
-        /\.tsx?$/
+        /\.ts$/,
+        /\.js$/,
+        /\.html$/,
       ],
       use: {
         loader: 'file-loader',
@@ -21,17 +25,26 @@ module.exports = {
       },
     },
       {
-        test: /\.tsx?$/,
+        test: /\.[j|t]s$/,
         use: 'ts-loader',
-        exclude: /node_modules/
       }
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: [ '.ts', '.js' ]
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'bundle-[hash].js',
     path: join(base, 'dist')
-  }
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: join(base, 'public/index.html'),
+      inject: 'body',
+    }),
+    new CopyWebpackPlugin([
+      { from: 'public/*.png', to: '' },
+    ])
+  ]
 };

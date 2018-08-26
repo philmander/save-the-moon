@@ -1,22 +1,27 @@
-import Sprite from './Sprite';
-import { GameStage } from './GameStage';
+import { EventEmitter } from 'eventemitter3';
+import { Sprite, FiringSprite, ControllableSprite, SpriteControl } from './Sprite';
 import createShelterBlock from '../sprites/ShelterBlock';
 import createInvader from '../sprites/Invader';
 import createExplosion, { ExplosionSize } from '../sprites/Explosion';
 import createGun from '../sprites/Gun';
 import { moveOrRemove, detectCollision } from './helpers';
-import FiringSprite from './FiringSprite';
-import ControllableSprite, { SpriteControl }  from './ControllableSprite';
 import gameOver from '../sounds/game-over.mp3';
 
-export default class Game {
+export enum GameStage {
+    READY,
+    RUNNING,
+    FINISHED,
+}
+export default function() {
+    return new Game();
+}
+
+class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
 
     private buffer: HTMLCanvasElement;
     private bufferCtx: CanvasRenderingContext2D;
-
-    private background: ImageBitmap;
 
     // sets which hold groups of on-screen sprites
     private invaderSet: Set<FiringSprite>;
@@ -27,14 +32,32 @@ export default class Game {
 
     private gun: FiringSprite & ControllableSprite;
 
-    private stage: GameStage;
+    private invaderInterval = 60 * 2;
+    private invaderIncrement = 0;    
+    private _score: number = 0;
+    
+    private _stage: GameStage;
+    private paused = false;
 
-    init() {
+    public events = new EventEmitter();
+
+    public get stage(): GameStage {
+        return this._stage;
+    }
+
+    public get score(): number {
+        return this._score;
+    }
+
+    constructor() {
+        this.handleKeyboard();
+    }
+
+    public init() {
         // set up the rendering context
         this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
 		this.canvas.width = parseInt(this.canvas.style.width);
         this.canvas.height = parseInt(this.canvas.style.height);
-        //this.canvas.style.backgroundColor = 'black';
         this.ctx = this.canvas.getContext('2d');
 
         // set up a rendering buffer 
@@ -53,7 +76,7 @@ export default class Game {
         this.gun = createGun(100, 430);    
 
         // setup the shelter blocks
-        for(let y = 350; y < 380; y += 10) {
+        for(let y = 370; y < 394; y += 8) {
             for(let x = 65; x < 145; x += 10) {
                 this.shelterSet.add(createShelterBlock(x, y));
             }
@@ -66,10 +89,23 @@ export default class Game {
                 this.shelterSet.add(createShelterBlock(x, y));
             }
         }
+        
+        // reinit game state
+        this.updateGameStage(GameStage.READY);
+        this.paused = false;
+        this._score = 0;
+    }
 
+    handleKeyboard() {        
         document.addEventListener('keydown', ev => {
-            if(this.stage = GameStage.RUNNING) {                
+            if(this.stage === GameStage.RUNNING) {                                
                 switch (ev.key) {
+                    case 'p':
+                        this.paused = !this.paused;       
+                        this.events.emit('paused', {
+                            paused: this.paused,
+                        })                                 
+                        break;
                     case 'ArrowLeft':
                         this.gun.control = SpriteControl.MOVE_LEFT;
                         break;
@@ -83,102 +119,28 @@ export default class Game {
                         this.gun.control = SpriteControl.NONE;  
                 }
             }
-        })
+        });
     }
 
-    start() {
-        this.stage = GameStage.RUNNING;
-
-        const frameRate = 60;
-        this.run(frameRate * 3);
+    start() {        
+        this.updateGameStage(GameStage.RUNNING);
+        this.run();
     }
 
-    run(invaderInterval: number, invaderIncrement: number = 0) {    
-        // introduce new invaders
-        invaderIncrement++;
-        if(invaderIncrement === invaderInterval) {            
-            this.invaderSet.add(createInvader());
-            invaderIncrement = 0;
-        }
-
-        // invaders
-        for(let invader of this.invaderSet) {             
-            const bomb = invader.fire();        
-            if(bomb) {
-                this.bombSet.add(bomb);
-            }
-   
-            moveOrRemove(invader, this.invaderSet);
-        }
-
-        // bombs
-        for(let bomb of this.bombSet) {
-            if(detectCollision(bomb, this.gun)) {
-                this.gun.hit();
-                bomb.hit();
-                this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.LARGE));                
-            }
-
-            for(let shelterBlock of this.shelterSet) {
-                if(detectCollision(bomb, shelterBlock)) {
-                    bomb.hit();
-                    shelterBlock.hit();
-                    moveOrRemove(shelterBlock, this.shelterSet);                    
-                    this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.SMALL));                
-                    // if there is one collision, there can't be any more
-                    break;
-                }
-            }
-            
-            moveOrRemove(bomb, this.bombSet);
-        }
-
-        // gun
-        if(this.gun.isAlive()) {                   
-            this.gun.move();
-            if(this.gun.isFiring() && this.missileSet.size < 5) {
-                this.missileSet.add(this.gun.fire());
-            }
-            this.gun.control = SpriteControl.NONE;            
-        } else {
-            this.stage = GameStage.FINISHED;
-        }
-
-        // missiles
-        for(let missile of this.missileSet) {        
-            for(let invader of this.invaderSet) {
-                if(detectCollision(missile, invader)) {
-                    missile.hit();
-                    invader.hit();
-
-                    // increment score
-
-                    this.explosionSet.add(createExplosion(invader.x, invader.y, ExplosionSize.LARGE));  
-                    break;
-                }
-            }
-
-            for(let shelterBlock of this.shelterSet) {
-                if(detectCollision(missile, shelterBlock)) {
-                    missile.hit();
-                    shelterBlock.hit();
-                    moveOrRemove(shelterBlock, this.shelterSet);
-                    break;
-                }            
-            }
-
-            moveOrRemove(missile, this.missileSet);
-        }
-
-        for(let explosion of this.explosionSet) {
-            moveOrRemove(explosion, this.explosionSet);
+    run() {    
+        if(!this.paused) {
+            this.runFrame();
+            this.events.emit('frame-done', {
+                score: this._score,
+                lives: this.gun.strength,
+            });
         }
 
         requestAnimationFrame(() => {
             this.paint();
-            if(this.stage === GameStage.RUNNING) {                
-                this.run(invaderInterval, invaderIncrement);
-            } else if(this.stage === GameStage.FINISHED) {
+            if(this._stage === GameStage.RUNNING) {                
+                this.run();
+            } else if(this._stage === GameStage.FINISHED) {
                 const audio = new Audio(gameOver);
                 audio.volume = 0.75;
                 setTimeout(() => {                    
@@ -208,5 +170,95 @@ export default class Game {
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.buffer, 0, 0);
+    }
+
+    runFrame() {      
+        // introduce new invaders
+        this.invaderIncrement++;
+        if(this.invaderIncrement === this.invaderInterval) {            
+            this.invaderSet.add(createInvader());
+            this.invaderIncrement = 0;
+        }
+
+        // invaders
+        for(let invader of this.invaderSet) {             
+            const bomb = invader.fire();        
+            if(bomb) {
+                this.bombSet.add(bomb);
+            }
+   
+            moveOrRemove(invader, this.invaderSet);
+        }
+
+        // bombs
+        for(let bomb of this.bombSet) {
+            if(detectCollision(bomb, this.gun)) {
+                this.gun.hit();
+                bomb.hit();
+                this._score += this.gun.scoreModifier;
+                this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.LARGE));                
+            }
+
+            for(let shelterBlock of this.shelterSet) {
+                if(detectCollision(bomb, shelterBlock)) {
+                    bomb.hit();
+                    shelterBlock.hit();                                        
+                    this._score += shelterBlock.scoreModifier;
+                    moveOrRemove(shelterBlock, this.shelterSet);                    
+                    this.explosionSet.add(createExplosion(bomb.x, bomb.y, ExplosionSize.SMALL));                
+                    // if there is one collision, there can't be any more
+                    break;
+                }
+            }
+            
+            moveOrRemove(bomb, this.bombSet);
+        }
+
+        // gun
+        if(this.gun.isAlive()) {                   
+            this.gun.move();
+            if(this.gun.isFiring() && this.missileSet.size < 2) {
+                this.missileSet.add(this.gun.fire());
+            }
+            this.gun.control = SpriteControl.NONE;            
+        } else {            
+            this.updateGameStage(GameStage.FINISHED);
+        }
+
+        // missiles
+        for(let missile of this.missileSet) {        
+            for(let invader of this.invaderSet) {
+                if(detectCollision(missile, invader)) {
+                    missile.hit();
+                    invader.hit();
+                    this._score += invader.scoreModifier;
+                    this.explosionSet.add(createExplosion(invader.x, invader.y, ExplosionSize.LARGE));  
+                    break;
+                }
+            }
+
+            for(let shelterBlock of this.shelterSet) {
+                if(detectCollision(missile, shelterBlock)) {
+                    missile.hit();
+                    shelterBlock.hit();
+                    moveOrRemove(shelterBlock, this.shelterSet);
+                    break;
+                }            
+            }
+
+            moveOrRemove(missile, this.missileSet);
+        }
+
+        // explosions
+        for(let explosion of this.explosionSet) {
+            moveOrRemove(explosion, this.explosionSet);
+        }
+    }
+
+    updateGameStage(stage: GameStage) {
+        this._stage = stage;
+        this.events.emit('stage-changed', {
+            stage,
+        });
     }
 }

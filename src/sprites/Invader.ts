@@ -1,7 +1,7 @@
-import Sprite from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
 import createBomb, { Bomb } from './Bomb';
-import FiringSprite from '../core/FiringSprite';
+import { Sprite, FiringSprite } from '../core/Sprite';
+import { randInRange } from '../core/helpers';
 import sound from '../sounds/invader.mp3';
 import gunImage from '../images/invader.png';
 
@@ -19,14 +19,16 @@ image.src = gunImage;
 
 export class Invader extends BaseSprite implements FiringSprite {
 
+    private _aggressiveness: number;
+
     constructor() {
         super();
 
         this._width = 45;
         this._height = 19;
 
-        this._dx = 8;
-        this._dy = 1;
+        this._dx = randInRange(4, 8);
+        this._dy = randInRange(1, 2);
 
         if(Math.random() >= 0.5) {
             this._x = 0 
@@ -37,6 +39,8 @@ export class Invader extends BaseSprite implements FiringSprite {
         this._y = 0;
 
         this._strength = 1;
+        this._scoreModifier = 500;
+        this._aggressiveness = randInRange(93, 98);
 
         this.play(sound);
     }
@@ -45,7 +49,7 @@ export class Invader extends BaseSprite implements FiringSprite {
         return super.isAlive() && this.y >= 0;
     }
 
-    public move(): void {
+    public move(): void {        
         if(this.x + this.width > 500 || this.x < 0) {
             this._dx *= -1;
         } else if(this.y + this.height > 320 || this.y < 0) {
@@ -62,7 +66,7 @@ export class Invader extends BaseSprite implements FiringSprite {
     }
 
     public isFiring(): boolean {
-        return Math.random() >= 0.95;
+        return Math.random() >= (this._aggressiveness / 100);
     }
 
     public draw(ctx: CanvasRenderingContext2D): void {

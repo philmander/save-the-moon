@@ -1,4 +1,4 @@
-import Sprite from '../core/Sprite';
+import { Sprite } from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
 
 export default function(x: number, y: number) {
@@ -8,7 +8,7 @@ export default function(x: number, y: number) {
 const colors = [
     'yellow',
     'lime',
-    'pink',
+    'purple',
 ];
 
 export class Bomb extends BaseSprite implements Sprite {
@@ -27,11 +27,22 @@ export class Bomb extends BaseSprite implements Sprite {
         this._width = 10;
         this._height = 10;
 
-        this._strength = 1;
+        this._strength = 1;    
     }
 
     public isAlive(): boolean {
         return super.isAlive() && this.y < 500;
+    }
+
+    public move(): void {
+        if(this.y > 480) {
+            this._dy = 0;
+            setTimeout(() => {
+                this.hit();
+            }, 1000);
+        }
+
+        super.move();
     }
 
     public draw(ctx: CanvasRenderingContext2D): void {

@@ -2,23 +2,82 @@
 <html>
     <head>
         <title>Save the Moon</title>
+        <link type="shortcut icon" type="image/png" href="./public/moon-icon.png">
+        <link href="https://fonts.googleapis.com/css?family=Orbitron:500,700" rel="stylesheet">
         <style>
+            html,
             body {
-                background: black;           
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: black;    
+                color: yellow;
             }
-            .wrap {            
+
+            .wrap {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+                height: 100%;
+                width: 100%;
+            }
+
+            .canvas-wrap {   
+                position: relative;         
                 width: 500px;
-                margin: 0 auto;
-                background: url(earth.png), url(surface.png), url(space.png);
+                background: url(public/earth.png), url(public/surface.png), url(public/space.png);
                 background-repeat: no-repeat, no-repeat, no-repeat;
                 background-position: top right, bottom center, 0 0;   
-            }            
+            }    
+            .game-info {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }        
+            .card {   
+                display: none;
+                padding: 10px;
+                height: 100%;
+                font-family: 'Orbitron', sans-serif;
+            }
+            .show {
+                display: block;
+            }
+            .center {
+                height: 100%;;
+                display: flex;
+                align-items: center;
+                justify-content: center;            
+            }
         </style>
     </head>
     <body>
         <div class=wrap>
-            <canvas id=canvas style="width: 500px; height: 500px"></canvas>
-        </div>
-        <script src="../dist/bundle.js"></script>
+            <div class=canvas-wrap>            
+                <div class=game-info>
+                    <div id=running class=card>
+                        <p>Score: <span id=score></span></p>
+                        <p>Lives: <span id=lives></span></p>
+                    </div>
+                    <div id=ready class=card>  
+                        <h1>Save the Moon</h1>                  
+                        <p>Press F2 to start</p>                        
+                    </div>
+                    <div id=finished class="card">             
+                        <div class=center>
+                            <div>
+                                <h1>Game Over</h1>
+                                <p>Final Score: <span id=final-score></span></p>
+                                <p>High Score: <span id=high-score></span></p>
+                                <p style="margin-top: 2em">Press F2 to play again</p>     
+                            </div>
+                        </div>                   
+                    </div>
+                </div>
+                
+                <canvas id=canvas style="width: 500px; height: 500px"></canvas>
+            </div>
+        </div>        
     </body>
 </html>

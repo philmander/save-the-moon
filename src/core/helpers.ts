@@ -1,4 +1,4 @@
-import Sprite from './Sprite';
+import { Sprite } from './Sprite';
 
 export function detectCollision(sprite1: Sprite, sprite2: Sprite): boolean {
     const collision = (
@@ -9,13 +9,17 @@ export function detectCollision(sprite1: Sprite, sprite2: Sprite): boolean {
     return collision;
 }
 
-export function moveOrRemove(sprite: Sprite, containingSet: Set<Sprite>, ifAlive?: Function): void {    
+export function moveOrRemove(sprite: Sprite, containingSet: Set<Sprite>, ifAliveCallback?: Function): void {    
     if(sprite.isAlive()) {
         sprite.move();
-        if(typeof ifAlive === 'function') {
-            ifAlive();
+        if(typeof ifAliveCallback === 'function') {
+            ifAliveCallback();
         }
     } else {
         containingSet.delete(sprite);
     }
+}
+
+export function randInRange(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }

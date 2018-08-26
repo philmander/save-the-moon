@@ -1,8 +1,6 @@
-import Sprite from '../core/Sprite';
+import { Sprite, FiringSprite, ControllableSprite, SpriteControl } from '../core/Sprite';
 import BaseSprite from '../core/BaseSprite';
 import createMissile from './Missile';
-import FiringSprite from '../core/FiringSprite';
-import ControllableSprite, { SpriteControl } from '../core/ControllableSprite';
 import gunImage from '../images/gun.png';
 
 export default function(x: number, y: number) {
@@ -34,6 +32,7 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
         this._dy = 0;
 
         this._strength = 3;
+        this._scoreModifier = -500;
     }
 
     private isMoving(): boolean {
