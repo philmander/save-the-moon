@@ -5,7 +5,8 @@ import createInvader from '../sprites/Invader';
 import createExplosion, { ExplosionSize } from '../sprites/Explosion';
 import createGun from '../sprites/Gun';
 import { moveOrRemove, detectCollision } from './helpers';
-import gameOver from '../sounds/game-over.mp3';
+import gameOverFx from '../sounds/game-over.mp3';
+import pauseFx from '../sounds/pause.mp3';
 
 export enum GameStage {
     READY,
@@ -101,6 +102,8 @@ class Game {
             if(this.stage === GameStage.RUNNING) {                                
                 switch (ev.key) {
                     case 'p':
+                        const audio = new Audio(pauseFx);
+                        audio.play();
                         this.paused = !this.paused;       
                         this.events.emit('paused', {
                             paused: this.paused,
@@ -141,7 +144,7 @@ class Game {
             if(this._stage === GameStage.RUNNING) {                
                 this.run();
             } else if(this._stage === GameStage.FINISHED) {
-                const audio = new Audio(gameOver);
+                const audio = new Audio(gameOverFx);
                 audio.volume = 0.75;
                 setTimeout(() => {                    
                     audio.play();
