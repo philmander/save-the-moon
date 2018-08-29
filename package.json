@@ -4,20 +4,21 @@
   "description": "An old Java game of mine resurrected in Typescript and HTML5",
   "main": "src/index.ts",
   "dependencies": {
-    "eventemitter3": "^3.1.0",
-    "ts-loader": "^4.4.2",
-    "typescript": "^3.0.1",
-    "webpack": "^4.16.4",
-    "webpack-cli": "^3.1.0"
+    "eventemitter3": "^3.1.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^4.5.2",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
-    "url-loader": "^1.0.1"
+    "url-loader": "^1.0.1",
+    "ts-loader": "^4.4.2",
+    "typescript": "^3.0.1",
+    "webpack": "^4.16.4",
+    "webpack-cli": "^3.1.0"
   },
   "scripts": {
     "build": "webpack",
+    "prepare" : "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
