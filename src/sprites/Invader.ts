@@ -41,7 +41,7 @@ export class Invader extends BaseSprite implements FiringSprite {
 
         this._strength = 1;
         this._scoreModifier = 500;
-        this._aggressiveness = randInRange(93, 98);
+        this._aggressiveness = randInRange(90, 95);
 
         this.play(sound);
     }
