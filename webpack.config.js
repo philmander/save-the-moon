@@ -1,13 +1,14 @@
 const { join} = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const base = process.cwd();
 
 module.exports = {
   entry: join(base, 'src/index.ts'),
   devtool: 'inline-source-map',
-  mode: 'development',
+  mode: 'production',
   module: {
     rules: [{
       exclude: [
@@ -46,5 +47,10 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: 'public/*.png', to: '' },
     ])
-  ]
+  ],
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin()
+    ]
+  }
 };
