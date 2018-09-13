@@ -4,7 +4,8 @@
   "description": "An old Java game of mine resurrected in Typescript and HTML5",
   "main": "src/index.ts",
   "dependencies": {
-    "eventemitter3": "^3.1.0"
+    "eventemitter3": "^3.1.0",
+    "tinygesture": "^1.1.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^4.5.2",
@@ -18,7 +19,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "prepare" : "npm run build",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

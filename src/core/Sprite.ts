@@ -11,6 +11,7 @@ export interface FiringSprite extends Sprite {
 
 export interface ControllableSprite extends Sprite {
     control: SpriteControl;
+    controlModifier: number;
 }
 
 export enum SpriteControl {

@@ -18,6 +18,7 @@ image.src = gunImage;
 export class Gun extends BaseSprite implements FiringSprite, ControllableSprite {
 
     public control: SpriteControl = SpriteControl.NONE;
+    public controlModifier: 1;
 
     constructor(x: number, y: number) {
         super();
@@ -52,9 +53,9 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
         }
 
         if(this.x > 0 && this.control === SpriteControl.MOVE_LEFT) {
-            this._x -= this._dx;
+            this._x -= this._dx * this.controlModifier;
         } else if(this.x + this.width <= 500 && this.control === SpriteControl.MOVE_RIGHT) {
-            this._x += this._dx;
+            this._x += this._dx * this.controlModifier;
         }
     }
 

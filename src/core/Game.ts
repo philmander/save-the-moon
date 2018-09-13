@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+import TinyGesture from 'tinygesture';
 import { Sprite, FiringSprite, ControllableSprite, SpriteControl } from './Sprite';
 import createShelterBlock from '../sprites/ShelterBlock';
 import createInvader from '../sprites/Invader';
@@ -55,7 +56,7 @@ class Game {
         canvas.height = 500;
 
         this.canvas = canvas;
-        this.handleKeyboard();
+        this.handleInput();
     }
 
     public init() {
@@ -98,32 +99,40 @@ class Game {
         this._score = 0;
     }
 
-    handleKeyboard() {        
-        document.addEventListener('keydown', ev => {
-            if(this.stage === GameStage.RUNNING) {                                
-                switch (ev.key) {
-                    case 'p':
-                        const audio = new Audio(pauseFx);
-                        audio.play();
-                        this.paused = !this.paused;       
-                        this.events.emit('paused', {
-                            paused: this.paused,
-                        })                                 
-                        break;
-                    case 'ArrowLeft':
-                        this.gun.control = SpriteControl.MOVE_LEFT;
-                        break;
-                    case 'ArrowRight':
-                        this.gun.control = SpriteControl.MOVE_RIGHT;
-                        break;
-                    case ' ': // Spacebar
-                        this.gun.control = SpriteControl.FIRE;
-                        break;
-                    default:
-                        this.gun.control = SpriteControl.NONE;  
-                }
+    handleInput() {         
+        const onInput = (key: string) => {
+            if(this.stage !== GameStage.RUNNING) {                                
+                return;
             }
-        });
+            switch (key) {
+                case 'p':
+                    const audio = new Audio(pauseFx);
+                    audio.play();
+                    this.paused = !this.paused;       
+                    this.events.emit('paused', {
+                        paused: this.paused,
+                    })                                 
+                    break;
+                case 'ArrowLeft':
+                    this.gun.control = SpriteControl.MOVE_LEFT;
+                    break;
+                case 'ArrowRight':
+                    this.gun.control = SpriteControl.MOVE_RIGHT;
+                    break;
+                case ' ': // Spacebar
+                    this.gun.control = SpriteControl.FIRE;
+                    break;
+                default:
+                    this.gun.control = SpriteControl.NONE;  
+            }
+        }      
+
+        document.addEventListener('keydown', ev => { this.gun.controlModifier = 1; onInput(ev.key) });        
+
+        const gesture = new TinyGesture(document, {});
+        gesture.on('swiperight', () => { this.gun.controlModifier = 2; onInput('ArrowRight'); });
+        gesture.on('swipeleft', () => { this.gun.controlModifier = 2; onInput('ArrowLeft'); });
+        gesture.on('tap', () => { onInput(' '); });
     }
 
     start() {        
