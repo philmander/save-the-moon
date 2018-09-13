@@ -5,6 +5,7 @@ export interface Sprite extends BaseSprite {
 }
 
 export interface FiringSprite extends Sprite {
+    ammo: number;
     fire(): Sprite;
     isFiring(): boolean;
 }

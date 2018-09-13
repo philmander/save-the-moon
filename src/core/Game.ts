@@ -77,6 +77,7 @@ class Game {
         this.explosionSet = new Set();
 
         this.gun = createGun(100, 430);    
+        this.events.emit('ammo-changed', { ammo: this.gun.ammo });
 
         // setup the shelter blocks
         for(let y = 370; y < 394; y += 8) {
@@ -230,8 +231,12 @@ class Game {
         // gun
         if(this.gun.isAlive()) {                   
             this.gun.move();
-            if(this.gun.isFiring() && this.missileSet.size < 2) {
-                this.missileSet.add(this.gun.fire());
+            if(this.gun.isFiring() && this.missileSet.size < 10) {
+                const missile = this.gun.fire();
+                if(missile) {
+                    this.missileSet.add(missile);
+                    this.events.emit('ammo-changed', { ammo: this.gun.ammo });
+                }            
             }
             this.gun.control = SpriteControl.NONE;            
         } else {            

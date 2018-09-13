@@ -19,6 +19,7 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
 
     public control: SpriteControl = SpriteControl.NONE;
     public controlModifier: 1;
+    private _ammo = 50;
 
     constructor(x: number, y: number) {
         super();
@@ -34,6 +35,10 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
 
         this._strength = 3;
         this._scoreModifier = -500;
+    }
+
+    public get ammo() {
+        return this._ammo;
     }
 
     private isMoving(): boolean {
@@ -59,8 +64,8 @@ export class Gun extends BaseSprite implements FiringSprite, ControllableSprite 
         }
     }
 
-    public fire(): Sprite {
-        return createMissile(this.x + (this.width / 2), this.y);
+    public fire(): Sprite {      
+        return this._ammo-- > 0 ? createMissile(this.x + (this.width / 2), this.y) : null;
     }
 
     public draw(ctx: CanvasRenderingContext2D): void {

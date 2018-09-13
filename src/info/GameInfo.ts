@@ -20,6 +20,7 @@ class GameInfoImpl {
     text = {
         lives: document.getElementById('lives') as HTMLElement,
         score: document.getElementById('score') as HTMLElement,
+        ammo: document.getElementById('ammo') as HTMLElement,
         finalScore: document.getElementById('final-score') as HTMLElement,
         highScore: document.getElementById('high-score') as HTMLElement,
     }
@@ -30,6 +31,10 @@ class GameInfoImpl {
 
     updateLives(lives: number) {
         this.text.lives.textContent = lives + '';
+    }
+
+    updateAmmo(ammo: number) {
+        this.text.ammo.textContent = ammo + '';
     }
 
     paused(paused: boolean) {

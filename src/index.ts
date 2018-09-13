@@ -42,6 +42,9 @@ game.events.on('stage-changed', data => {
         gameInfo.finished(highScore, game.score);
     }
 });
+game.events.on('ammo-changed', data => {
+    gameInfo.updateAmmo(data.ammo);
+});
 
 game.init();
 
@@ -54,3 +57,5 @@ const gameStart = () => {
 
 document.addEventListener('keydown', gameStart);
 document.addEventListener('touchend', gameStart);
+
+console.log('https://github.com/philmander/save-the-moon');

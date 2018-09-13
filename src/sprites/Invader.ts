@@ -20,6 +20,7 @@ image.src = gunImage;
 export class Invader extends BaseSprite implements FiringSprite {
 
     private _aggressiveness: number;
+    private _ammo = 1;
 
     constructor() {
         super();
@@ -43,6 +44,10 @@ export class Invader extends BaseSprite implements FiringSprite {
         this._aggressiveness = randInRange(93, 98);
 
         this.play(sound);
+    }
+
+    public get ammo() {
+        return this._ammo;
     }
 
     public isAlive(): boolean {
