@@ -1,9 +1,24 @@
 import createGame, { GameStage } from './core/Game';
 import getGameInfo from './info/GameInfo';
 
+const canvasWrap = <HTMLDivElement>document.querySelector('.canvas-wrap');
+const canvas = <HTMLCanvasElement>document.getElementById('canvas');
+
+// restart on orientation change
+const resizeCanvas = () => {
+    const square = Math.min(800, Math.min(window.innerWidth, window.innerHeight));
+    canvasWrap.style.top = ((window.innerHeight - square) / 2) + 'px';
+    canvasWrap.style.width = square + 'px';
+    canvasWrap.style.height = square + 'px';
+    canvas.style.width = square + 'px';
+    canvas.style.height = square + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 const gameInfo = getGameInfo();
 
-const game = createGame();
+const game = createGame(canvas);
 
 game.events.on('paused', data => {
     gameInfo.paused(data.paused);
@@ -30,9 +45,12 @@ game.events.on('stage-changed', data => {
 
 game.init();
 
-document.addEventListener('keydown', ev => {
-    if(ev.key === 'F2' && game.stage !== GameStage.RUNNING) {        
+const gameStart = () => {
+    if(game.stage !== GameStage.RUNNING) {        
         game.init();
         game.start();
     }
-});
+};
+
+document.addEventListener('keydown', gameStart);
+document.addEventListener('touchend', gameStart);

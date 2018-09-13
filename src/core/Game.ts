@@ -13,8 +13,8 @@ export enum GameStage {
     RUNNING,
     FINISHED,
 }
-export default function() {
-    return new Game();
+export default function(canvas: HTMLCanvasElement) {
+    return new Game(canvas);
 }
 
 class Game {
@@ -50,15 +50,16 @@ class Game {
         return this._score;
     }
 
-    constructor() {
+    constructor(canvas: HTMLCanvasElement) {
+        canvas.width = 500;
+        canvas.height = 500;
+
+        this.canvas = canvas;
         this.handleKeyboard();
     }
 
     public init() {
-        // set up the rendering context
-        this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
-		this.canvas.width = parseInt(this.canvas.style.width);
-        this.canvas.height = parseInt(this.canvas.style.height);
+        // set up the rendering context        
         this.ctx = this.canvas.getContext('2d');
 
         // set up a rendering buffer 
